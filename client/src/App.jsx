@@ -1,268 +1,139 @@
-import { useState } from "react";
-import './App.css'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+
+import Article from "./pages/Articles"
+import NotFound from "./pages/NotFound"
+import Home from "./pages/Home"
+import Register from './pages/Register'
+import Login from './pages/Login'
 
 function App() {
-  const [articles, setArticles] = useState([
-    {id: 1, title: 'react learning', content: '', author: 'Chol Su'},
-    {id: 2, title: 'JS learning', content: '', author: 'Yong Hui'},
-    {id: 3, title: 'CSS learning', content: '', author: 'Nam Sik'}
-  ]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [username, setUsername] = useState('')
 
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [author, setAuthor] = useState('')
-
-  const addArticle = (e) => {
-    e.preventDefault()
-
-    if (title === '' || content === '' || author === '') {
-      alert('Enter article...')
-      return
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const user = localStorage.getItem('username')
+    if (token) {
+      setIsLoggedIn(true)
+      setUsername(user)
     }
+  }, [])
 
-    const nextId = articles.length + 1
-
-    const newArticle = {
-      id: nextId,
-      title: title,
-      content: content,
-      author: author
-    }
-
-    const updateArticles = [...articles, newArticle]
-
-    setArticles(updateArticles)
-
-    setTitle('')
-    setContent('')
-    setAuthor('')
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('username')
+    setIsLoggedIn(false)
+    setUsername('')
+    window.location.href = '/'
   }
 
   return (
-    <div>
-      <div style={formContainerStyle}>
-        <h2 style={sectionTitleStyle}>Write New Article</h2>
-        <form onSubmit={addArticle} style={formStyle}>
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>Title:</label>
-            <input
-              type="text"
-              value={title}
-              placeholder="Enter your title..."
-              onChange={(e) => setTitle(e.target.value)}
-              style={inputStyle}
-            />
+    <BrowserRouter>
+      <nav style={navStyle}>
+        <div style={navContainerStyle}>
+          <Link to="/" style={logoStyle}>MiniBlog</Link>
+          
+          <div style={navLinksStyle}>
+            <Link to="/" style={linkStyle}>Home</Link>
+            <Link to="/article" style={linkStyle}>Articles</Link>
+            
+            {!isLoggedIn ? (
+              <>
+                <Link to="/register" style={linkStyle}>Register</Link>
+                <Link to="/login" style={linkStyle}>Login</Link>
+              </>
+            ) : (
+              <>
+                <span style={userNameStyle}>{username}</span>
+                <button onClick={handleLogout} style={logoutButtonStyle}>Logout</button>
+              </>
+            )}
           </div>
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>Content:</label>
-            <textarea
-              value={content}
-              placeholder="Enter your content..."
-              onChange={(e) => setContent(e.target.value)}
-              rows="4"
-              style={textareaStyle}
-            />
-          </div>
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>Author:</label>
-            <input
-              type="text"
-              value={author}
-              placeholder="Enter your name..."
-              onChange={(e) => setAuthor(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-          <div style={buttonGroupStyle}>
-            <button type="submit" style={submitButtonStyle}>Add</button>
-            <button 
-              type="button"
-              onClick={() => {
-                setTitle('')
-                setContent('')
-                setAuthor('')
-              }}
-              style={resetButtonStyle}
-            >
-              Reset
-            </button>
-          </div>
-        </form>
+        </div>
+      </nav>
+
+      <div style={contentStyle}>
+        <Routes>
+          <Route path='/' element={<Home />}/>
+          <Route path="/article" element={<Article />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </div>
-      <div style={listContainerStyle}>
-        <h2 style={sectionTitleStyle2}>Article List ({articles.length})</h2>
-        <ul style={listStyle}>
-          {articles.map(article => (
-            <li key={article.id} style={listItemStyle}>
-              <div style={itemNumberStyle}>{article.id}</div>
-              <div style={itemContentStyle}>
-                <div style={itemTitleStyle}>{article.title}</div>
-                <div style={itemAuthorStyle}>{article.author}</div>
-              </div>
-              <div style={itemActionsStyle}>
-                <button style={viewButtonStyle}>view</button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    </BrowserRouter>
   )
 }
 
-const formContainerStyle = {
-  backgroundColor: '#f9f9f9',
-  borderRadius: '12px',
-  padding: '24px',
-  margin: '20px',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+const navStyle = {
+  backgroundColor: '#f8f9fa',
+  borderBottom: '1px solid #eaeaea',
+  boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+  position: 'sticky',
+  top: 0,
+  zIndex: 1000,
+  backdropFilter: 'blur(0px)'
 }
 
-const sectionTitleStyle = {
-  fontSize: '20px',
-  fontWeight: '600',
-  marginBottom: '20px',
-  color: '#333'
-}
-
-const sectionTitleStyle2 = {
-  fontSize: '20px',
-  fontWeight: '600',
-  marginBottom: '20px',
-  color: '#d5d5d5ff'
-}
-
-const formStyle = {
+const navContainerStyle = {
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: '16px 24px',
   display: 'flex',
-  flexDirection: 'column',
-  gap: '16px'
-}
-
-const inputGroupStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px'
-}
-
-const labelStyle = {
-  fontWeight: '500',
-  color: '#555',
-  fontSize: '14px'
-}
-
-const inputStyle = {
-  padding: '10px 12px',
-  fontSize: '14px',
-  border: '1px solid #ddd',
-  borderRadius: '6px',
-  outline: 'none',
-  transition: 'border-color 0.3s'
-}
-
-const textareaStyle = {
-  padding: '10px 12px',
-  fontSize: '14px',
-  border: '1px solid #ddd',
-  borderRadius: '6px',
-  outline: 'none',
-  fontFamily: 'inherit',
-  resize: 'vertical'
-}
-
-const buttonGroupStyle = {
-  display: 'flex',
-  gap: '12px',
-  marginTop: '8px'
-}
-
-const submitButtonStyle = {
-  padding: '10px 20px',
-  backgroundColor: '#007bff',
-  color: 'white',
-  border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontSize: '14px',
-  fontWeight: '500'
-}
-
-const resetButtonStyle = {
-  padding: '10px 20px',
-  backgroundColor: '#6c757d',
-  color: 'white',
-  border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontSize: '14px',
-  fontWeight: '500'
-}
-
-const listContainerStyle = {
-  margin: '20px'
-}
-
-const listStyle = {
-  listStyle: 'none',
-  padding: '0',
-  margin: '0'
-}
-
-const listItemStyle = {
-  display: 'flex',
-  alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '16px',
-  marginBottom: '12px',
-  backgroundColor: '#fff',
-  border: '1px solid #eee',
-  borderRadius: '10px',
-  transition: 'box-shadow 0.3s',
-  cursor: 'pointer'
+  alignItems: 'center'
 }
 
-const itemNumberStyle = {
-  width: '40px',
-  height: '40px',
+const logoStyle = {
+  fontSize: '22px',
+  fontWeight: '700',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  textDecoration: 'none',
+  letterSpacing: '-0.5px'
+}
+
+const navLinksStyle = {
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '#007bff',
-  color: 'white',
-  borderRadius: '50%',
-  fontWeight: '600',
-  fontSize: '16px'
+  gap: '28px',
+  alignItems: 'center'
 }
 
-const itemContentStyle = {
-  flex: 1,
-  marginLeft: '16px'
+const linkStyle = {
+  color: '#4a5568',
+  textDecoration: 'none',
+  fontSize: '15px',
+  fontWeight: '500',
+  padding: '6px 0',
+  position: 'relative',
+  transition: 'color 0.2s ease'
 }
 
-const itemTitleStyle = {
-  fontSize: '16px',
-  fontWeight: '600',
-  color: '#333',
-  marginBottom: '4px'
+const userNameStyle = {
+  color: '#667eea',
+  fontSize: '14px',
+  fontWeight: '500',
+  backgroundColor: '#f0f0ff',
+  padding: '6px 14px',
+  borderRadius: '20px'
 }
 
-const itemAuthorStyle = {
-  fontSize: '12px',
-  color: '#888'
-}
-
-const itemActionsStyle = {
-  display: 'flex',
-  gap: '8px'
-}
-
-const viewButtonStyle = {
-  padding: '6px 12px',
-  backgroundColor: '#28a745',
-  color: 'white',
-  border: 'none',
-  borderRadius: '5px',
+const logoutButtonStyle = {
+  backgroundColor: 'transparent',
+  color: '#e53e3e',
+  border: '1px solid #e53e3e',
+  padding: '6px 14px',
+  borderRadius: '6px',
   cursor: 'pointer',
-  fontSize: '12px'
+  fontSize: '14px',
+  fontWeight: '500',
+  transition: 'all 0.2s ease'
+}
+
+const contentStyle = {
+  minHeight: 'calc(100vh - 60px)'
 }
 
 export default App

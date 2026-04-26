@@ -1,0 +1,10 @@
+# dependencies
+**/node_modules/
+**/node_modules
+
+# server
+server/node_modules/
+
+# env files
+.env
+.env.local

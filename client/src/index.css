@@ -121,3 +121,49 @@ button:hover {
   transform: translateY(-1px);
   transition: all 0.2s;
 }
+
+html {
+  overflow-y: scroll;
+}
+
+nav a {
+  position: relative;
+}
+
+nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+nav a:hover::after {
+  width: 100%;
+}
+
+button {
+  transition: all 0.2s ease !important;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+a:hover {
+  color: #667eea !important;
+}
+
+button:hover {
+  background-color: #e53e3e !important;
+  color: white !important;
+}
+
+.logout-btn:hover {
+  background-color: #e53e3e !important;
+  color: white !important;
+}

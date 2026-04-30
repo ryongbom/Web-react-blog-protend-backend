@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Article(props) {
-  const [articles, setArticles] = useState([
-    {id: 1, title: 'react learning', content: '', author: 'Chol Su'},
-    {id: 2, title: 'JS learning', content: '', author: 'Yong Hui'},
-    {id: 3, title: 'CSS learning', content: '', author: 'Nam Sik'}
-  ]);
+function Article() {
+  const [articles, setArticles] = useState([])
+  const navigate = useNavigate()
+  const username = localStorage.getItem('username')
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/posts')
+    .then(res => res.json())
+    .then(data => setArticles(data))
+    .catch(err => console.log(err))
+  }, [])
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -18,21 +24,49 @@ function Article(props) {
       return
     }
 
-    const nextId = articles.length + 1
-
-    const newArticle = {
-      id: nextId,
-      title: title,
-      content: content,
-      author: props.userAuthor
+    if (!username) {
+      alert('Please login to write article')
+      return
     }
 
-    const updateArticles = [...articles, newArticle]
+    const newArticle = {
+      title: title,
+      content: content,
+      author: username
+    }
 
-    setArticles(updateArticles)
+    fetch('http://localhost:5000/api/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application/json'
+      },
+      body: JSON.stringify(newArticle)
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert('Successfully added your article')
+      const updateArticles = [...articles, data]
+      setArticles(updateArticles)
 
-    setTitle('')
-    setContent('')
+      setTitle('')
+      setContent('')
+    })
+    .catch(err => console.log(err))
+  }
+
+  const moveDetail = (id) => {
+    navigate(`/posts/${id}`)
+  }
+
+  const deleteArticle = (id) => {
+      fetch(`http://localhost:5000/api/posts/${id}`, {
+        method: 'DELETE'
+      })
+      .then (() =>{
+        const updateArticles = articles.filter(article => article._id !== id)
+        setArticles(updateArticles)
+      })
+      .catch ( err => console.log(err) )
   }
 
   return (
@@ -79,15 +113,22 @@ function Article(props) {
         <h2 style={sectionTitleStyle2}>Article List ({articles.length})</h2>
         <ul style={listStyle}>
           {articles.map(article => (
-            <li key={article.id} style={listItemStyle}>
-              <div style={itemNumberStyle}>{article.id}</div>
+            <li key={article._id} style={listItemStyle}>
+              <div style={itemNumberStyle} >{articles.indexOf(article) + 1}</div>
               <div style={itemContentStyle}>
                 <div style={itemTitleStyle}>{article.title}</div>
                 <div style={itemAuthorStyle}>{article.author}</div>
               </div>
-              <div style={itemActionsStyle}>
-                <button style={viewButtonStyle}>view</button>
-              </div>
+              {username ? 
+                <div style={itemActionsStyle}>
+                  <button style={viewButtonStyle} onClick={() => moveDetail(article._id)}>view</button>
+                  <button onClick={() => deleteArticle(article._id)} style={deleteButtonStyle}>Delete</button>  
+                </div>
+                :
+                <div style={itemActionsStyle}>
+                  <button style={viewButtonStyle} onClick={() => moveDetail(article._id)}>view</button>  
+                </div>
+              }
             </li>
           ))}
         </ul>
@@ -244,6 +285,16 @@ const itemActionsStyle = {
 const viewButtonStyle = {
   padding: '6px 12px',
   backgroundColor: '#28a745',
+  color: 'white',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+  fontSize: '12px'
+}
+
+const deleteButtonStyle = {
+  padding: '6px 12px',
+  backgroundColor: '#d54444ff',
   color: 'white',
   border: 'none',
   borderRadius: '5px',

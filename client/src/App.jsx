@@ -6,6 +6,8 @@ import NotFound from "./pages/NotFound"
 import Home from "./pages/Home"
 import Register from './pages/Register'
 import Login from './pages/Login'
+import ArticleDetail from './pages/ArticleDetail'
+import CorrectArticle from './pages/CorrectArticle'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -59,6 +61,8 @@ function App() {
           <Route path="/article" element={<Article />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path='/posts/:id/correct' element={<CorrectArticle />} />
+          <Route path='/posts/:id' element={<ArticleDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

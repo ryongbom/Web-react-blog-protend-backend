@@ -2,6 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const User = require('./models/User')
+const Post = require('./models/Post')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 require('dotenv').config()
@@ -9,6 +10,7 @@ require('dotenv').config()
 const app = express()
 
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
 const JWT_SECRET = 'your-secret-key'
@@ -56,6 +58,78 @@ app.post('/api/auth/login', async (req, res) => {
     )
 
     res.json({ token, username: user.username })
+})
+
+app.get('/api/posts', async (req, res) => {
+    const posts = await Post.find().sort({ createdAt: -1 })
+    res.json(posts)
+})
+
+app.post('/api/posts', async (req, res) => {
+    try {
+        const newPost = new Post({
+            title: req.body.title,
+            content: req.body.content,
+            author: req.body.author
+        })
+        await newPost.save()
+        res.json(newPost)
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+app.get('/api/posts/:id', async (req, res) => {
+    try {
+        const articleId = req.params.id
+
+        const article = await Post.findById(
+            articleId
+        )
+
+        console.log(article)
+
+        if (!article) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        res.json(article)
+    }
+    catch (err) {
+        console.log(err)
+    }
+})
+
+app.delete('/api/posts/:id', async (req, res) => {
+    try {
+        const id = req.params.id
+        const posts = await Post.findByIdAndDelete(id)
+
+        res.json(posts)
+    }
+    catch (err) {
+        console.log(err)
+    }
+})
+
+app.put('/api/posts/:id', async (req, res) => {
+    try {
+        const articleId = req.params.id
+
+        const { title, content } = req.body
+
+        const article = await Post.findByIdAndUpdate(
+            articleId,
+            { title, content },
+            { new: true }
+        )
+
+        res.json(article)
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message })
+    }
 })
 
 const PORT = 5000
